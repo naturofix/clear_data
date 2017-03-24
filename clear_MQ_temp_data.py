@@ -9,6 +9,7 @@ print "python clear_MQ_temp_data.py path"
 
 global test
 test = False
+test = True
 
 
 def generate_command(command): # uses a numiric imput to deduce the command to run
@@ -31,7 +32,7 @@ def generate_command(command): # uses a numiric imput to deduce the command to r
 		print ("%s : %s") %(command,command_list_o)
 	if command == 8:
 		command_list_o = command_list[0]
-		test = True
+
 	return command_list_o
 
 
