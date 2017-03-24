@@ -239,7 +239,7 @@ if 'trash' in command_list:
 		else:
 			print 'Detected file indicating the data should not be touched'
 			for keep_entry in keep_list:
-				print keep entry
+				print keep_entry
 			print "Data was not moved"
 			raw_input()
 	
