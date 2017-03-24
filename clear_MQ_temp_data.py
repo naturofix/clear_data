@@ -171,6 +171,7 @@ if 'trash' in command_list:
 			for root, dirnames, filenames in os.walk(match_entry):
 				for filename in fnmatch.filter(filenames, keep_file):
 					keep_list.append(os.path.join(root, filename))
+		raw_input(keep_list)
 		if keep_list == []:
 
 			match_list = match_entry.split('/')
