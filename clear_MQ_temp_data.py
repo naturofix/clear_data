@@ -7,10 +7,10 @@ import datetime
 
 print "python clear_MQ_temp_data.py path"
 
+test = False
 
 
-
-def generate_command(command):
+def generate_command(command): # uses a numiric imput to deduce the command to run
 	command_list = ['trash','recover','space']
 	command_list_o = []
 	if command == 1:
@@ -28,6 +28,9 @@ def generate_command(command):
 	if command == 7:
 		command_list_o = command_list[0:3]
 		print ("%s : %s") %(command,command_list_o)
+	if command == 8:
+		command_list_o = command_list[0]
+		test = True
 	return command_list_o
 
 
@@ -60,15 +63,18 @@ global error_list
 error_list = []
 
 def run_command(cmd):
-	
-	proc = subprocess.Popen([cmd], stderr=subprocess.PIPE, shell=True)
-	(sdoutput, err) = proc.communicate()
-	
-	#print(sdoutput)
-	if sdoutput != None:
-		print(sdoutput)
-		print 'error'
-		raw_input('enter ...')
+	if test == False:
+		
+		proc = subprocess.Popen([cmd], stderr=subprocess.PIPE, shell=True)
+		(sdoutput, err) = proc.communicate()
+		
+		#print(sdoutput)
+		if sdoutput != None:
+			print(sdoutput)
+			print 'error'
+			raw_input('enter ...')
+	else:
+		print 'just testing, no file are being moved'
 
 def create_dir(base_path,path_list,created_path_list):
 	dir_line = base_path
@@ -103,25 +109,24 @@ def replace_characters(name):
 	return name
 	
 
-def extension_scan(incorrect_files,path,extension):
+def extension_scan(incorrect_files,path,extension): #looks for specific file extensions within a path
 	exclude_list = ['recal.txt']
+
 	for root, dirnames, filenames in os.walk(path):
 		for filename in fnmatch.filter(filenames, '*.%s' %(extension)):
-			file_name = os.path.join(root, filename)
-			if '/proc/' not in file_name:
-				if '/p0/' not in file_name:
+			file_name = os.path.join(root, filename) # detected filename with extension
+			if '/proc/' not in file_name: # ignores directory created by maxquant
+				if '/p0/' not in file_name: # ignores directory created by maxquant
 					split_list = file_name.split('/')
-					if split_list[len(split_list)-1] not in exclude_list:
+					if split_list[len(split_list)-1] not in exclude_list:	#compares to exclude list defines above
 						print file_name
-						incorrect_files.append(file_name)
+						incorrect_files.append(file_name) # addes to incorrect_files list
 					else:
 						print '\n\n\n file in exvlusion list\n'
 						print file_name
 						print split_list[len(split_list)-1]
 						print '\nsearching ... please wait ...\n'
-						#raw_input('in exclude list : enter to continue')
-	#print incorrect_files
-	return incorrect_files
+	return incorrect_files # incorrect files used to decided if the path should be moved or not
 
 #os.system('clear')
 print(path)
@@ -139,6 +144,8 @@ if 'space' in command_list:
 	print start_size
 	
 
+trash_exclude_list = ['keep.txt']
+
 if 'trash' in command_list:
 	proc = subprocess.Popen(["du -sh %s" %(path)], stdout=subprocess.PIPE, shell=True)
 	(start_size, err) = proc.communicate()
@@ -147,101 +154,94 @@ if 'trash' in command_list:
 	#raw_input('trash')
 	matches = []
 	print 'searching please wait ....'
+
+	### run through path looking for a folder called combined indicating a MaxQuant analysis
 	for root, dirnames, filenames in os.walk(path):
 		for filename in fnmatch.filter(dirnames, 'combined'):
 			matches.append(os.path.join(root, filename))
 	trash_path_list = []
+
+	#matches is a list of "combined" file directories
 	for match_entry in matches:
 		error_hit = 0
-		#print '\n%s' %(match_entry)
-		match_list = match_entry.split('/')
-		match_line = '_'.join(match_list)
-		#dir_line = '%s/%s' %(trash_path,match_line)
-		#dir_line = dir_line.replace(' ','_')
-		base_dir = '/'.join(match_list[:len(match_list)-1])
-		#print(base_dir)
-		#raw_input()
-		#print dir_line
-		#raw_input()
-		#dir_line = trash_path
-		#for dir_entry in match_list[1:]:
-			##print dir_entry
-			#dir_line = '%s/%s' %(dir_line,dir_entry)
-			##print dir_line
-			#try:
-				#os.stat(dir_line)
-			#except:
-				#os.mkdir(dir_line) 
-		#try:
-		#	os.stat(dir_line)
-		#except:
-		#	os.mkdir(dir_line) 
-		#raw_input()
-		dir_line = trash_path
-		for dir_entry in match_list[2:]:
-			dir_line = '%s/%s' %(dir_line,dir_entry)
-		
 
-		file_list = os.listdir(match_entry)
-		#print file_list
-		
-		for file_entry in file_list:
-			#print(file_entry)
-			#raw_input()
-			incorrect_files = 'none' #if this is not defined properly, files with moved
-			if "txt" not in file_entry:
-				if 'combined' not in file_entry:
-					print '\n\nsearching through extension list, please wait ...'
-					incorrect_files = []
-					file_path = '%s/%s' %(match_entry,file_entry)
-					print(file_path)
-					for extension in extension_list:
-						incorrect_files = extension_scan(incorrect_files,file_path,extension)
+		keep_hit = 0
+		keep_list = []
+		for keep_file in trash_exclude_list:
+			for root, dirnames, filenames in os.walk(match_entry):
+				for filename in fnmatch.filter(filenames, keep_file):
+					keep_list.append(os.path.join(root, filename))
+		if keep_list == []:
+
+			match_list = match_entry.split('/')
+			match_line = '_'.join(match_list)
+
+			base_dir = '/'.join(match_list[:len(match_list)-1])
+
+			dir_line = trash_path
+			for dir_entry in match_list[2:]:
+				dir_line = '%s/%s' %(dir_line,dir_entry)
+			
+
+			file_list = os.listdir(match_entry)
+			#print file_list
+			
+			# runs through the files lists in "combined folder"
+
+
+			for file_entry in file_list:
+				incorrect_files = 'none' #if this is not defined properly, files will be moved
+				# ignores the folder txt and folders called combined
+				if "txt" not in file_entry:
+					if 'combined' not in file_entry:
+						print '\n\nsearching through extension list, please wait ...'
+						incorrect_files = []
+						file_path = '%s/%s' %(match_entry,file_entry)
+						print(file_path)
+						for extension in extension_list: # searches through an extension list
+							if incorrect_files == []: # prevent unnecessory searching if extension is detected
+								incorrect_files = extension_scan(incorrect_files,file_path,extension)
+						
+				if incorrect_files != [] and incorrect_files != 'none': # if incorrect files is not empty, the directory is not moved (raw input to see why)
+					incorrect_hit = 1
+					print '\n\nERROR : potentially important file extensions found in directory to be moved\n'
+
 					
-			if incorrect_files != [] and incorrect_files != 'none':
-				#os.system('clear')
-				print '\n\nERROR : potentially important file extensions found in directory to be moved\n'
-				#for incorrect_file_entry in incorrect_files:
-				#	print incorrect_file_entry
-				
-				print file_path
-				print '\nwill not be moved\n\n'
-				raw_input('\n\npress enter to continue\n\n')
-			if incorrect_files == []:
-				
-				trash_path_list = create_dir(trash_path,match_list[2:],trash_path_list)
-				cmd = "mv %s/%s %s" %(match_entry.replace(' ','\\ '),file_entry.replace(' ','\\ '),dir_line.replace(' ','\\ '))
-				#cmd = "mv '%s/%s' '%s'" %(match_entry,file_entry,dir_line)
-				print(cmd+'\n')
-				run_command(cmd)
-						#os.system(cmd)
-						#try:
-							#subprocess.call([cmd])
-						#except OSError:
-							#os.system(cmd)
-							##error_list.append('EROROR %s\n' %(cmd))
-							#error_hit = 1
-			#raw_input()
-		
-				
-		base_file_list = os.listdir(base_dir)
-		for base_entry in base_file_list:
-			#print base_entry
-			if '.index' in base_entry:
-				trash_path_list = create_dir(trash_path,match_list[2:],trash_path_list)
-				cmd = 'mv %s/%s %s' %(base_dir.replace(' ','\\ '),base_entry.replace(' ','\\ '),dir_line.replace(' ','\\ '))
-				print(cmd+'\n')
-				run_command(cmd)
-				#os.system(cmd)
-				cmd = 'mv %s/%s %s' %(base_dir.replace(' ','\\ '),base_entry.replace('.index','').replace(' ','\\ '),dir_line.replace(' ','\\ '))
-				print(cmd+'\n')
-				run_command(cmd)
+					print file_path
+					print '\nwill not be moved\n\n'
+					raw_input('\n\npress enter to continue\n\n')
+				if incorrect_files == []: # is incorrect files is empty, files moved to trash path
+					
+					trash_path_list = create_dir(trash_path,match_list[2:],trash_path_list)
+					cmd = "mv %s/%s %s" %(match_entry.replace(' ','\\ '),file_entry.replace(' ','\\ '),dir_line.replace(' ','\\ '))
+					print(cmd+'\n')
+					run_command(cmd)
 
-		if error_hit == 1:
-			error_list.append('ERROR %s\n' %(match_entry))
-			#raw_input('enter to continue')
-			error_hit = 0
-		#raw_input()
+			
+			# removed .index files
+			base_file_list = os.listdir(base_dir)
+			for base_entry in base_file_list:
+				if '.index' in base_entry:
+					trash_path_list = create_dir(trash_path,match_list[2:],trash_path_list)
+					cmd = 'mv %s/%s %s' %(base_dir.replace(' ','\\ '),base_entry.replace(' ','\\ '),dir_line.replace(' ','\\ '))
+					print(cmd+'\n')
+					run_command(cmd)
+					#os.system(cmd)
+					cmd = 'mv %s/%s %s' %(base_dir.replace(' ','\\ '),base_entry.replace('.index','').replace(' ','\\ '),dir_line.replace(' ','\\ '))
+					print(cmd+'\n')
+					run_command(cmd)
+
+			if error_hit == 1:
+				error_list.append('ERROR %s\n' %(match_entry))
+				#raw_input('enter to continue')
+				error_hit = 0
+			#raw_input()
+		else:
+			print 'Detected file indicating the data should not be touched'
+			for keep_entry in keep_list:
+				print keep entry
+			print "Data was not moved"
+			raw_input()
 	
 	
 	size_list = ['\n\n\n',str(datetime.datetime.now().time()),'\n\n']
@@ -303,8 +303,11 @@ if 'recover' in command_list:
 				if trash_folder not in trash_folder_list:
 					cmd = 'mv %s %s' %('/'+trash_folder,'%s/%s' %(recover_path,destination_path))
 					print('\n'+cmd)
-					os.system(cmd)
-					trash_folder_list.append(trash_folder)
+					if test == False:
+						os.system(cmd)
+						trash_folder_list.append(trash_folder)
+					else:
+						print 'just testing script'
 				else:
 					print 'folder already moved'
 			print "\n\nERROR : moved the whole folder : ERROR\n\n"
