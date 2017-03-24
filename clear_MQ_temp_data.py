@@ -167,17 +167,22 @@ if 'trash' in command_list:
 
 		keep_hit = 0
 		keep_list = []
+		match_list = match_entry.split('/')
+		match_line = '_'.join(match_list)
+
+		base_dir = '/'.join(match_list[:len(match_list)-1])
+
 		for keep_file in trash_exclude_list:
-			for root, dirnames, filenames in os.walk(match_entry):
+			for root, dirnames, filenames in os.walk(base_dir):
 				for filename in fnmatch.filter(filenames, keep_file):
 					keep_list.append(os.path.join(root, filename))
+		print base_dir
+		print match_entry
+
 		raw_input(keep_list)
 		if keep_list == []:
 
-			match_list = match_entry.split('/')
-			match_line = '_'.join(match_list)
 
-			base_dir = '/'.join(match_list[:len(match_list)-1])
 
 			dir_line = trash_path
 			for dir_entry in match_list[2:]:
