@@ -7,9 +7,9 @@ import datetime
 
 print "python clear_MQ_temp_data.py path"
 
-
-test = False
 global test
+test = False
+
 
 def generate_command(command): # uses a numiric imput to deduce the command to run
 	command_list = ['trash','recover','space']
