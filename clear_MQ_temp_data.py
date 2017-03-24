@@ -146,6 +146,7 @@ if 'space' in command_list:
 	
 
 trash_exclude_list = ['keep.txt']
+raw_input(test)
 
 if 'trash' in command_list:
 	proc = subprocess.Popen(["du -sh %s" %(path)], stdout=subprocess.PIPE, shell=True)
@@ -177,10 +178,6 @@ if 'trash' in command_list:
 			for root, dirnames, filenames in os.walk(base_dir):
 				for filename in fnmatch.filter(filenames, keep_file):
 					keep_list.append(os.path.join(root, filename))
-		print base_dir
-		print match_entry
-
-		raw_input(keep_list)
 		if keep_list == []:
 
 
