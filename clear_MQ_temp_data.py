@@ -7,8 +7,9 @@ import datetime
 
 print "python clear_MQ_temp_data.py path"
 
-test = False
 
+test = False
+global test
 
 def generate_command(command): # uses a numiric imput to deduce the command to run
 	command_list = ['trash','recover','space']
@@ -243,10 +244,10 @@ if 'trash' in command_list:
 				error_hit = 0
 			#raw_input()
 		else:
-			print 'Detected file indicating the data should not be touched'
+			print '\nDetected file indicating the data should not be touched'
 			for keep_entry in keep_list:
 				print keep_entry
-			print "Data was not moved"
+			print "Data was not moved\n"
 			raw_input()
 	
 	
