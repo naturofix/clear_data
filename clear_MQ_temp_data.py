@@ -146,7 +146,7 @@ if 'space' in command_list:
 	print start_size
 	
 
-trash_exclude_list = ['keep.txt']
+trash_exclude_list = ['keep.txt','Phospho (STY)Sites.txt']s
 raw_input(test)
 
 if 'trash' in command_list:
@@ -328,14 +328,7 @@ if 'space' in command_list:
 	proc = subprocess.Popen(["du -sh %s" %(path)], stdout=subprocess.PIPE, shell=True)
 	(after_size, err) = proc.communicate()
 	print 'after : ',after_size
-	
-	#cmd = 'du -sh /MS_Experiments/temp_trash'
-	#print(cmd)
-	#os.system(cmd)
-	
-	#cmd = 'du -sh /MS_Experiments/trash_recover'
-	#print(cmd)
-	#os.system(cmd)
+
 	
 	folder_list = os.listdir('/MS_Experiments')
 	size_list = ['\n\n\n',str(datetime.datetime.now().time()),'\n\n']
