@@ -146,7 +146,7 @@ if 'space' in command_list:
 	print start_size
 	
 
-trash_exclude_list = ['keep.txt','Phospho (STY)Sites.txt']s
+trash_exclude_list = ['keep.txt','Phospho (STY)Sites.txt']
 raw_input(test)
 
 if 'trash' in command_list:
